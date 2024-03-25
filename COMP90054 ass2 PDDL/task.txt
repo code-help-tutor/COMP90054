@@ -1,0 +1,539 @@
+WeChat: cstutorcs
+QQ: 749389476
+Email: tutorcs@163.com
+(define (problem task1-A)
+    (:domain task1-problemdomain)
+    (:objects tea - tea-type
+              ice - ice-type
+              mango-tapioca-balls - tapioca-balls-type
+              mango-syrup - syrup-type
+    )
+    ,
+    (:init (empty)
+    )
+    
+    (:goal (and (iced) 
+                (in-cup tea) 
+                (in-cup mango-tapioca-balls)
+                (in-cup mango-syrup)
+            )
+    )
+)
+
+
+(define (problem task1-B)
+    (:domain task1-problemdomain)
+    (:objects tea - tea-type
+              ice - ice-type
+              mango-syrup - syrup-type
+              lime-syrup - syrup-type
+    )
+    
+    (:init (empty)
+    )
+    
+    (:goal (and (iced) 
+                (in-cup tea) 
+                (in-cup mango-syrup)
+                (in-cup lime-syrup)
+            )
+    )
+)
+
+(define (domain task2-domain)
+
+    (:requirements :strips
+        :typing
+    )
+
+    (:types tapioca-balls-type
+            syrup-type
+            ice-type
+            tea-type
+
+    )
+
+    (:constants ice - ice-type
+                tea - tea-type
+    )
+
+    (:predicates (empty) (in-cup ?x)
+                 (syrup-added) (tapioca-balls-added)
+                 (iced) (heated ?x)
+                 (mixed)
+    
+    )
+
+    (:functions
+
+    )
+
+    (:action add-syrup
+        :parameters (?x - syrup-type)
+        :precondition (and (not(in-cup ?x)) 
+                           (not(syrup-added))
+                      )
+                      
+        :effect (and (in-cup ?x) 
+                     (syrup-added) 
+                     (not(empty))
+                )
+    )
+    
+    (:action add-tapioca-balls
+        :parameters (?x - tapioca-balls-type)
+        :precondition (and (not(in-cup ?x)) 
+                           (not(tapioca-balls-added))
+                      )
+                      
+        :effect (and (in-cup ?x) 
+                     (tapioca-balls-added) 
+                     (not(empty))
+                )
+    )
+    
+    (:action add-ice
+        :parameters (?x - ice-type)
+        :precondition (and (not(in-cup ?x)))
+        :effect (and (iced) (in-cup ?x) (not(empty)))
+    )
+    
+    (:action add-tea
+        :parameters (?x - tea-type)
+        :precondition (and (not(in-cup ?x)))
+        :effect (and (in-cup ?x) (not(empty)))
+    )
+    
+    (:action heat
+        :parameters ()
+        :precondition (and (not(empty)))
+        :effect (and
+                    ; ice -> ice melt, drink is not iced
+                    (when 
+                        (in-cup ice)
+                        (and (not (in-cup ice)) (not (iced)))
+                    )
+                    
+                    ; assumption: only heat tapioca-balls
+                    
+                    ; no ice -> heated all 
+                    ; if contains tea
+                    ;(when
+                    ;    (and (not (in-cup ice)) (in-cup tea))
+                    ;    (heated tea)
+                    ;)
+                    ; if contains tapioca balls 
+                    (forall (?x - tapioca-balls-type)
+                        (when
+                            (and (not (in-cup ice)) (in-cup ?x))
+                            (heated ?x)
+                        )
+                    )
+                    ; if contains syrup
+                    ;(forall (?x - syrup-type)
+                    ;    (when
+                    ;        (and (not (in-cup ice)) (in-cup ?x))
+                    ;        (heated ?x)
+                    ;    )
+                    ;)
+                )
+    )
+    
+    (:action mix
+        :parameters ()
+        :precondition (and (not(empty)))
+        :effect (and 
+                    ;tea + syrup -> mixed
+                    (when 
+                        (and (in-cup tea) (syrup-added)) 
+                        (mixed)
+                    )
+                    
+                    ; tapicoca balls -> not exist
+                    ; mango flavor
+                    (when
+                        (in-cup mango-tapioca-balls)
+                        (and (not (in-cup mango-tapioca-balls)) 
+                             (in-cup mango-syrup)
+                        )
+                    )
+                    ; lime flavor
+                    (when
+                        (in-cup lime-tapioca-balls)
+                        (and (not (in-cup lime-tapioca-balls)) 
+                             (in-cup lime-syrup)
+                        )
+                    )
+                    
+                    ; tapicoca balls being heated -> not exist
+                    ; mango flavor
+                    (when
+                        (heated mango-tapioca-balls)
+                        (not (heated mango-tapioca-balls)) 
+                             
+                    )
+                    ; lime flavor
+                    (when
+                        (heated lime-tapioca-balls)
+                        (not (heated lime-tapioca-balls)) 
+                             
+                    )
+                    
+                )
+    )
+)
+
+
+
+(define (problem task2-A)
+    (:domain task2-domain)
+    (:objects tea - tea-type
+              ice - ice-type
+              mango-syrup - syrup-type
+              mango-tapioca-balls - tapioca-balls-type
+              lime-syrup - syrup-type
+              lime-tapioca-balls - tapioca-balls-type)
+              
+    
+    (:init (empty))
+    (:goal (and (mixed)
+                (not (heated tea))
+                (heated mango-tapioca-balls)
+                (in-cup mango-syrup)
+                (not(heated mango-syrup))
+                (not(in-cup ice))
+           )
+    )
+)
+
+
+(define (problem task2-B)
+    (:domain task2-domain)
+    (:objects tea - tea-type
+              ice - ice-type
+              mango-syrup - syrup-type
+              mango-tapioca-balls - tapioca-balls-type
+              lime-syrup - syrup-type
+              lime-tapioca-balls - tapioca-balls-type
+    )
+              
+    
+    (:init (empty))
+    (:goal (and (mixed)
+                (not (in-cup mango-tapioca-balls))
+                (not (in-cup lime-tapioca-balls))
+                (in-cup mango-syrup)
+                (not (heated mango-syrup))
+                (in-cup lime-syrup)
+                (not (heated lime-syrup))
+                (in-cup ice)
+           )
+    )
+)
+
+
+(define (domain task3-domain)
+
+    (:requirements :strips
+        :typing
+    )
+
+    (:types tapioca-balls-type
+            syrup-type
+            ice-type
+            tea-type
+            cup-type
+    )
+
+    (:constants ice - ice-type
+                tea - tea-type
+    )
+
+    (:predicates (empty ?x - cup-type)
+                 (in-cup ?x ?y)
+                 (iced ?x - cup-type)  
+                 (mixed ?x - cup-type)
+                 (syrup-added) (tapioca-balls-added)
+                 (heated ?x ?y)
+                 (heated-cup ?x - cup-type)
+    
+    )
+
+    (:functions
+
+    )
+
+    (:action add-syrup
+        :parameters (?x - cup-type ?y - syrup-type)
+        :precondition (and (not(in-cup ?x ?y)) 
+                           (not(syrup-added))
+                      )
+                      
+        :effect (and (in-cup ?x ?y) 
+                     (syrup-added) 
+                     (not(empty ?x))
+                )
+    )
+    
+    (:action add-tapioca-balls
+        :parameters (?x - cup-type ?y - tapioca-balls-type)
+        :precondition (and (not(in-cup ?x ?y)) 
+                           (not(tapioca-balls-added))
+                      )
+                      
+        :effect (and (in-cup ?x ?y) 
+                     (tapioca-balls-added) 
+                     (not(empty ?x))
+                )
+    )
+    
+    (:action add-ice
+        :parameters (?x - cup-type ?y - ice-type)
+        :precondition (and (not(in-cup ?x ?y)))
+        :effect (and (iced-drink) (in-cup ?x) (not(empty ?x)))
+    )
+    
+    (:action add-tea
+        :parameters (?x - cup-type ?y - tea-type)
+        :precondition (and (not(in-cup ?x ?y)))
+        :effect (and (in-cup ?x ?y) (not(empty ?x)))
+    )
+    
+    (:action heat
+        :parameters (?x - cup-type)
+        :precondition (and (not(empty)))
+        :effect (and
+                    ; ice -> ice melt, drink is not iced
+                    (when 
+                        (in-cup ?x ice)
+                        (and (not (in-cup ?x ice)) (not (iced ?x)))
+                    )
+                    
+                    
+                    ; no ice -> heated all 
+                    ; if contains tea
+                    (when
+                        (and (not (in-cup ?x ice)) (in-cup ?x tea))
+                        (heated ?x tea)
+                    )
+                    ; if contains tapioca balls 
+                    (forall (?y - tapioca-balls-type)
+                        (when
+                            (and (not (in-cup ?x ice)) (in-cup ?x ?y))
+                            (heated ?x ?y)
+                        )
+                    )
+                    ; if contains syrup
+                    (forall (?y - syrup-type)
+                        (when
+                            (and (not (in-cup ?x ice)) (in-cup ?x ?y))
+                            (heated ?x ?y)
+                        )
+                    )
+                    
+                    (heated-cup ?x)
+                )
+    )
+    
+    (:action mix
+        :parameters (?x - cup-type)
+        :precondition (and (not(empty ?x)))
+        :effect (and 
+                    ;tea + syrup -> mixed
+                    (when 
+                        (and (in-cup ?x tea) (syrup-added)) 
+                        (mixed ?x)
+                    )
+                    
+                    ; tapicoca balls -> not exist
+                    ; mango flavor
+                    (when
+                        (in-cup ?x mango-tapioca-balls)
+                        (and (not (in-cup ?x mango-tapioca-balls)) 
+                             (in-cup ?x mango-syrup)
+                        )
+                    )
+                    ; lime flavor
+                    (when
+                        (in-cup ?x lime-tapioca-balls)
+                        (and (not (in-cup ?x lime-tapioca-balls)) 
+                             (in-cup ?x lime-syrup)
+                        )
+                    )
+                    
+                    ; tapicoca balls being heated -> not exist
+                    ; mango flavor
+                    (when
+                        (heated ?x mango-tapioca-balls)
+                        (not (heated ?x mango-tapioca-balls)) 
+                             
+                    )
+                    ; lime flavor
+                    (when
+                        (heated ?x lime-tapioca-balls)
+                        (not (heated ?x lime-tapioca-balls)) 
+                             
+                    )
+                    
+                )
+    )
+    
+    (:action tip
+        :parameters (?x - cup-type ?y - cup-type)
+        :precondition (and (not(empty ?x)) (not(= ?x ?y)))
+        :effect (and 
+                    ; tip tea
+                    (when 
+                        (in-cup ?x tea)
+                        (and (in-cup ?y tea) (not(in-cup ?x tea)))
+                    )
+                    
+                    ; tip ice
+                    (when 
+                        (in-cup ?x ice)
+                        (and (in-cup ?y ice) (not(in-cup ?x ice)))
+                    )
+                    
+                    ; tip tapioca balls 
+                    (forall (?z - tapioca-balls-type)
+                        (when
+                            (in-cup ?x ?z)
+                            (and (in-cup ?y ?z) (not(in-cup ?x ?z)))
+                        )
+                    )
+                    
+                    ; tip syrup
+                    (forall (?z - syrup)
+                        (when
+                            (in-cup ?x ?z)
+                            (and (in-cup ?y ?z) (not(in-cup ?x ?z)))
+                        )
+                    )
+                    (empty ?x)
+                )
+    )
+    
+    
+)
+
+
+
+
+
+(define (problem task3-A)
+    (:domain task3-domain)
+    (:objects tea - tea-type
+              ice - ice-type
+              mango-syrup - syrup-type
+              mango-tapioca-balls - tapioca-balls-type
+              lime-syrup - syrup-type
+              lime-tapioca-balls - tapioca-balls-type
+              cup1 - cup-type
+              cup2 - cup-type
+    )
+              
+    
+    (:init (empty cup1)
+           (empty cup2)
+    )
+    
+    (:goal (or 
+               (and (mixed cup1)
+                    (not (heated cup1 tea))
+                    (heated cup1 mango-tapioca-balls)
+                    (in-cup cup1 mango-syrup)
+                    (not (heated cup1 mango-syrup))
+                    (not (in-cup cup1 ice))
+                    (not (heated-cup cup1))
+                    (empty cup2)
+               )
+               (and (mixed cup2)
+                    (not (heated cup2 tea))
+                    (heated cup2 mango-tapioca-balls)
+                    (in-cup cup2 mango-syrup)
+                    (not (heated cup2 mango-syrup))
+                    (not (in-cup cup2 ice))
+                    (not (heated-cup cup2))
+                    (empty cup1)
+                )      
+    
+            )
+    )
+)
+
+
+
+
+
+(define (problem task3-B)
+    (:domain task3-domain)
+    (:objects tea - tea-type
+              ice - ice-type
+              mango-syrup - syrup-type
+              mango-tapioca-balls - tapioca-balls-type
+              lime-syrup - syrup-type
+              lime-tapioca-balls - tapioca-balls-type
+              cup1 - cup-type
+              cup2 - cup-type
+    )
+              
+    
+    (:init (empty cup1)
+           (empty cup2)
+    )
+    
+    (:goal (or 
+               (and (mixed cup1)
+                    (not (in-cup cup1 mango-tapioca-balls))
+                    (not (in-cup cup1 lime-tapioca-balls))
+                    (in-cup cup1 mango-syrup)
+                    (not (heated cup1 mango-syrup))
+                    (in-cup cup1 lime-syrup)
+                    (heated cup1 lime-syrup)
+                    (in-cup cup1 ice)
+                    (not (heated-cup cup1))
+                    (empty cup2)
+                    
+               )
+               (and (mixed cup2)
+                    (not (in-cup cup2 mango-tapioca-balls))
+                    (not (in-cup cup2 lime-tapioca-balls))
+                    (in-cup cup2 mango-syrup)
+                    (not (heated cup2 mango-syrup))
+                    (in-cup cup2 lime-syrup)
+                    (heated cup2 lime-syrup)
+                    (in-cup cup2 ice)
+                    (not (heated-cup cup2))
+                    (empty cup1)
+            )
+    
+    )
+)
+
+(define (problem task1)
+
+    (:domain task1-problemdomain)
+
+    (:objects tea - tea-type
+              mango-syrup - syrup-type
+              lime - syrup-type
+              ice - ice-type
+              mango-tapioca-balls - tapioca-balls-type
+    )
+
+    (:init
+        (empty)
+        
+    )
+
+    (:goal
+        (and
+            (in-cup tea)
+            (in-cup mango-syrup)
+            (iced)
+            (in-cup mango-tapioca-balls)
+        )
+    )
+
+)
+
